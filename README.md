@@ -1,6 +1,6 @@
 # Test React Native - Texo
 
-![alt text](https://raw.githubusercontent.com/RaonyMarcondes/texo-test/main/screenshots/Screenshot%202024-05-06%20at%2011.46.32.png "Preview")
+![alt text](https://raw.githubusercontent.com/RaonyMarcondes/texo-test/main/screenshots/Screenshot%202024-05-20%20at%2009.06.03.png 'Preview')
 
 ## Setup
 
