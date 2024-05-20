@@ -1,26 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import { Text, DataTable } from 'react-native-paper'
-import { BASE_URL } from '@env'
+
+import { useFetch } from 'src/Helpers/HttpClient'
 
 const YearsWithNWinners = () => {
   const [years, setYears] = useState([])
 
+  const { response } = useFetch({
+    url: '/?projection=years-with-multiple-winners'
+  })
+
   useEffect(() => {
-    fetch(`${BASE_URL}/?projection=years-with-multiple-winners`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Error: Unable to retrieve the list')
-        }
-        return response.json()
-      })
-      .then((data) => setYears(data.years))
-      .catch((error) => console.error(error))
-  }, [])
+    if (response?.years) setYears(response.years)
+  }, [response])
 
   return (
     <>
       <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-        List of Years with Multiple Winners
+        List years with multiple winners
       </Text>
       {years && years?.length > 0 && (
         <DataTable style={{ backgroundColor: '#ecdeff', borderRadius: 10, marginBottom: 18 }}>

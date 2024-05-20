@@ -1,36 +1,31 @@
 import React, { useState, useEffect } from 'react'
 import { ScrollView } from 'react-native'
 import { Text, DataTable } from 'react-native-paper'
-import { BASE_URL } from '@env'
+
+import { useFetch } from 'src/Helpers/HttpClient'
 
 const ProducersWithIntervals = () => {
   const [minInterval, setMinInterval] = useState({})
   const [maxInterval, setMaxInterval] = useState({})
 
+  const { response } = useFetch({
+    url: '/?projection=max-min-win-interval-for-producers'
+  })
+
   useEffect(() => {
-    fetch(`${BASE_URL}/?projection=max-min-win-interval-for-producers`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Error: Unable to retrieve the list')
-        }
-        return response.json()
-      })
-      .then((data) => {
-        console.log(data)
-        setMinInterval(data.min[0])
-        setMaxInterval(data.max[0])
-      })
-      .catch((error) => console.error(error))
-  }, [])
+    if (response?.min[0]) setMinInterval(response.min[0])
+
+    if (response?.max[0]) setMaxInterval(response.max[0])
+  }, [response])
 
   return (
     <>
       <Text variant="titleMedium" style={{ maxWidth: '80%', marginBottom: 8 }}>
-        Producers with Longest and Shortest Interval Between Wins
+        Producers with longest and shortest interval between wins
       </Text>
 
       <Text variant="titleSmall" style={{ marginBottom: 8 }}>
-        MAXIMUN
+        Maximum
       </Text>
       {maxInterval && (
         <DataTable style={{ backgroundColor: '#ecdeff', borderRadius: 10, marginBottom: 18 }}>
@@ -77,7 +72,7 @@ const ProducersWithIntervals = () => {
       )}
 
       <Text variant="titleSmall" style={{ marginBottom: 8 }}>
-        MINIMUN
+        Minimum
       </Text>
       {minInterval && (
         <DataTable style={{ backgroundColor: '#ecdeff', borderRadius: 10, marginBottom: 18 }}>
@@ -99,13 +94,13 @@ const ProducersWithIntervals = () => {
               textStyle={{ fontWeight: 'bold' }}
               style={{ justifyContent: 'center' }}
             >
-              Previous Win
+              Previous Year
             </DataTable.Title>
             <DataTable.Title
               textStyle={{ fontWeight: 'bold' }}
               style={{ justifyContent: 'center' }}
             >
-              Following Win
+              Following Year
             </DataTable.Title>
           </DataTable.Header>
           <DataTable.Row>

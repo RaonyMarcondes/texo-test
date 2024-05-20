@@ -1,57 +1,69 @@
-import { CheckBox, Dialog } from '@rneui/themed'
+import { CheckBox } from '@rneui/themed'
 import React, { useState, useEffect } from 'react'
 import { View, ScrollView } from 'react-native'
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { DataTable, Icon, Searchbar, Text } from 'react-native-paper'
-import { BASE_URL } from '@env'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
+
+import { useFetch } from 'src/Helpers/HttpClient'
 
 const MoviesList = () => {
   const [movies, setMovies] = useState([])
   const [page, setPage] = React.useState<number>(0)
   const [year, setYear] = useState('')
   const [searchYear, setSearchYear] = useState('')
-  const [showDialog, setShowDialog] = useState(false)
   const [filterByYear, setFilterByYear] = useState(false)
   const [winner, setWinner] = useState(false)
   const itemsPerPage = 12
   const [totalElements, setTotalElements] = React.useState<number>(0)
   const [totalPages, setTotalPages] = React.useState<number>(0)
+  const [isValid, setIsValid] = useState(true)
 
   const from = page * itemsPerPage
   const to = Math.min((page + 1) * itemsPerPage, totalElements)
 
+  let url = `/?page=${page}&size=${itemsPerPage}`
+
+  if (year) {
+    url += `&year=${year}`
+  }
+
+  if (winner) {
+    url += `&winner=${winner}`
+  }
+
+  const { response, fetchData } = useFetch({
+    url
+  })
+
   useEffect(() => {
-    let url = BASE_URL
-
-    url += `?page=${page}&size=${itemsPerPage}`
-
-    if (year) {
-      url += `?year=${year}`
+    if (response) {
+      setMovies(response.content)
+      setPagination(response.totalElements, response.totalPages)
     }
+  }, [response])
 
-    if (winner) {
-      url += `&winner=${winner}`
-    }
-
-    fetch(url)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Error: Unable to retrieve the movies list')
-        }
-        return response.json()
-      })
-      .then((data) => {
-        setMovies(data.content)
-        setPagination(data.totalElements, data.totalPages)
-      })
-      .catch((error) => {
-        console.error(error)
-      })
+  useEffect(() => {
+    fetchData()
   }, [page, year, winner])
 
   const setPagination = (totalElements, totalPages) => {
     setTotalElements(totalElements)
     setTotalPages(totalPages)
+  }
+
+  const validateYear = (query) => {
+    return /^\d{4}$/.test(query)
+  }
+
+  const handleSubmit = () => {
+    setIsValid(validateYear(searchYear))
+    setYear(searchYear)
+  }
+
+  const clearYear = () => {
+    setYear('')
+    setSearchYear('')
+    setIsValid(true)
   }
 
   return (
@@ -82,7 +94,10 @@ const MoviesList = () => {
               >
                 <CheckBox
                   checked={filterByYear}
-                  onPress={() => setFilterByYear(!filterByYear)}
+                  onPress={() => {
+                    setFilterByYear(!filterByYear)
+                    if (filterByYear) clearYear()
+                  }}
                   iconType="material-community"
                   checkedIcon="checkbox-marked"
                   uncheckedIcon="checkbox-blank-outline"
@@ -93,22 +108,25 @@ const MoviesList = () => {
               </View>
             </View>
             {filterByYear && (
-              <Searchbar
-                key={'input-year'}
-                keyboardType="numeric"
-                maxLength={4}
-                placeholder="Year"
-                onChangeText={(value) => {
-                  setSearchYear(value)
-                }}
-                value={searchYear}
-                onSubmitEditing={() => setShowDialog(true)}
-                onBlur={() => setShowDialog(true)}
-                onIconPress={() => {
-                  setSearchYear('')
-                }}
-                style={{ marginBottom: 15 }}
-              />
+              <>
+                <Searchbar
+                  key={'input-year'}
+                  keyboardType="numeric"
+                  maxLength={4}
+                  placeholder="by year"
+                  onChangeText={(value) => {
+                    setSearchYear(value)
+                  }}
+                  value={searchYear}
+                  onSubmitEditing={handleSubmit}
+                  onBlur={handleSubmit}
+                  onClearIconPress={() => clearYear()}
+                  style={{ marginBottom: 15 }}
+                />
+                {!isValid && (
+                  <Text style={{ color: 'red', marginBottom: 15 }}>Please enter a valid year.</Text>
+                )}
+              </>
             )}
 
             <DataTable style={{ backgroundColor: '#ecdeff', borderRadius: 10, marginBottom: 18 }}>
@@ -153,11 +171,6 @@ const MoviesList = () => {
             </DataTable>
           </ScrollView>
         )}
-        <Dialog isVisible={showDialog} onBackdropPress={() => setShowDialog(false)}>
-          <Dialog.Title title="Hello There!" />
-          <Text>{`Sorry to ruin your experience, but there is a bug in the API that makes this date filter impossible to work! \n`}</Text>
-          <Text>{`I explain this in detail in the project's READEME.md`}</Text>
-        </Dialog>
       </SafeAreaView>
     </SafeAreaProvider>
   )

@@ -1,27 +1,10 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
 import * as React from 'react'
-import { Text, View } from 'react-native'
 import { Icon } from 'react-native-paper'
 
 import Dashboard from './Screens/Dashboard/Dashboard'
 import MoviesList from './Screens/MoviesList/MoviesList'
-
-function HomeScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Home!</Text>
-    </View>
-  )
-}
-
-function SettingsScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Settings!</Text>
-    </View>
-  )
-}
 
 const Tab = createBottomTabNavigator()
 
@@ -43,7 +26,7 @@ export default function App() {
           name="Movies"
           component={MoviesList}
           options={{
-            headerTitle: 'List of Movies',
+            headerTitle: 'List Movies',
             tabBarActiveTintColor: '#8e7ab6',
             tabBarIcon: ({ color, size }) => <Icon source="movie-star" size={size} color={color} />
           }}

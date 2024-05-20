@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from 'react'
 import { ScrollView } from 'react-native'
 import { Text, DataTable } from 'react-native-paper'
-import { BASE_URL } from '@env'
+
+import { useFetch } from 'src/Helpers/HttpClient'
 
 const StudiosWithNWins = () => {
   const [studios, setStudios] = useState([])
 
+  const { response } = useFetch({
+    url: '/?projection=years-with-multiple-winners'
+  })
+
   useEffect(() => {
-    fetch(`${BASE_URL}/?projection=studios-with-win-count`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Error: Unable to retrieve the list')
-        }
-        return response.json()
-      })
-      .then((data) => setStudios(data.studios))
-      .catch((error) => console.error(error))
-  }, [])
+    if (response && response?.studios) setStudios(response.studios)
+  }, [response])
 
   return (
     <>
       <Text variant="titleMedium" style={{ marginBottom: 8 }}>
-        Top 3 Studios with Winners
+        Top 3 studios with winners
       </Text>
       {studios && studios?.length > 0 && (
         <ScrollView>
@@ -33,7 +30,7 @@ const StudiosWithNWins = () => {
                 borderTopRightRadius: 10
               }}
             >
-              <DataTable.Title textStyle={{ fontWeight: 'bold' }}>Year</DataTable.Title>
+              <DataTable.Title textStyle={{ fontWeight: 'bold' }}>Name</DataTable.Title>
               <DataTable.Title
                 textStyle={{ fontWeight: 'bold' }}
                 style={{ justifyContent: 'center' }}

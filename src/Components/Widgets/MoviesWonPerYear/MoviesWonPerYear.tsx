@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from 'react'
 import { Text, DataTable, Searchbar } from 'react-native-paper'
-import { BASE_URL } from '@env'
+
+import { useFetch } from 'src/Helpers/HttpClient'
 
 const MoviesWonPerYear = () => {
   const [data, setData] = useState({})
-  const [year, setYear] = useState('')
+  const [year, setYear] = useState('0000')
   const [searchYear, setSearchYear] = useState('')
   const [isValid, setIsValid] = useState(true)
+  const { response, fetchData } = useFetch({
+    url: `/?winner=true&year=${year}`
+  })
 
   useEffect(() => {
-    if (year.trim() === '') {
-      setYear('')
+    if (response) {
+      setData(response)
+    }
+  }, [response])
+
+  useEffect(() => {
+    const trimmedYear = year.trim()
+    if (trimmedYear === '') {
+      setYear('0000')
       return
     }
 
@@ -18,17 +29,7 @@ const MoviesWonPerYear = () => {
       return
     }
 
-    fetch(`${BASE_URL}/?winner=true&year=${year}`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Error: Unable to retrieve the list')
-        }
-        return response.json()
-      })
-      .then((data) => {
-        setData(data[0])
-      })
-      .catch((error) => console.error(error))
+    fetchData()
   }, [year, isValid])
 
   const validateYear = (query) => {
@@ -40,10 +41,17 @@ const MoviesWonPerYear = () => {
     setYear(searchYear)
   }
 
+  const clearYear = () => {
+    setYear('0000')
+    setSearchYear('')
+    setIsValid(true)
+    setData({})
+  }
+
   return (
     <>
       <Text variant="titleMedium" style={{ maxWidth: '80%', marginBottom: 8 }}>
-        Movies that Won per Year
+        List movie winners by year
       </Text>
 
       <>
@@ -51,7 +59,7 @@ const MoviesWonPerYear = () => {
           key={'input-year'}
           keyboardType="numeric"
           maxLength={4}
-          placeholder="Year"
+          placeholder="Search by year"
           onChangeText={(value) => {
             setSearchYear(value)
             setIsValid(true)
@@ -59,10 +67,7 @@ const MoviesWonPerYear = () => {
           value={searchYear}
           onSubmitEditing={handleSubmit}
           onBlur={handleSubmit}
-          onIconPress={() => {
-            setYear('0000')
-            setSearchYear('')
-          }}
+          onClearIconPress={() => clearYear()}
         />
         {!isValid && <Text style={{ color: 'red' }}>Please enter a valid year.</Text>}
       </>
@@ -82,12 +87,14 @@ const MoviesWonPerYear = () => {
           <DataTable.Title textStyle={{ fontWeight: 'bold' }}>Title</DataTable.Title>
         </DataTable.Header>
 
-        {data && data?.title ? (
-          <DataTable.Row>
-            <DataTable.Cell>{data.id}</DataTable.Cell>
-            <DataTable.Cell>{data.year}</DataTable.Cell>
-            <DataTable.Cell>{data.title}</DataTable.Cell>
-          </DataTable.Row>
+        {data?.length ? (
+          data.map(({ id, year, title }) => (
+            <DataTable.Row key={title}>
+              <DataTable.Cell>{id}</DataTable.Cell>
+              <DataTable.Cell>{year}</DataTable.Cell>
+              <DataTable.Cell>{title}</DataTable.Cell>
+            </DataTable.Row>
+          ))
         ) : (
           <DataTable.Row>
             <DataTable.Cell style={{ justifyContent: 'center' }}>

@@ -23,9 +23,3 @@
    $ yarn run android (in an environment with Android Studio previously installed)
 
 6. In the command line, a prompt will appear with options to run the application in an emulated environment, or run it on a device that has the [Expo Go](https://expo.dev/go) app previously installed
-
-## API Issue
-
-In the movies list, it is not possible to filter exclusively by YEAR, without the Winner filter being active simultaneously.
-
-It is also not possible to associate the YEAR filter with the pagination, since the API signatures become completely different, and lose paging information when the YEAR and Winner filters are active, so the list becomes the exact The same as in the case of the widget that displays the winners of a given year selected through a search field on the Dashboard.
